@@ -29,12 +29,14 @@ def generate_launch_description():
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
+                arguments=["5", "5", "0", "0", "0", "0", "map", "odom"],
+                emulate_tty=True,
             ),
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["0", "0", "0", "0", "0", "0", "odom", "base_link"],
+                arguments=["5", "5", "0", "0", "0", "0", "odom", "base_link"],
+                emulate_tty=True,
             ),
             Node(
                 package="nav2_map_server",
@@ -47,6 +49,7 @@ def generate_launch_description():
                                       + "/config/map.yaml"},
                 ],
                 output="screen",
+                emulate_tty=True,
             ),
             Node(
                 package="nav2_lifecycle_manager",
@@ -61,6 +64,7 @@ def generate_launch_description():
                     {"node_names": ["map_server_amcl"]},
                 ],
                 output="screen",
+                emulate_tty=True,
             ),
             Node(
                 package="nav2_smoother",
@@ -74,6 +78,7 @@ def generate_launch_description():
                     + "/config/smoother_server.yaml"
                 ],
                 arguments=["--ros-args", "--log-level", log_level],
+                emulate_tty=True,
             ),
             Node(
                 package="nav2_planner",
@@ -103,6 +108,7 @@ def generate_launch_description():
                 ],
                 arguments=["--ros-args", "--log-level", log_level],
                 remappings=[("/map", "/map_amcl")],
+                emulate_tty=True,
             ),
             Node(
                 package="nav2_lifecycle_manager",
@@ -115,6 +121,7 @@ def generate_launch_description():
                     {"node_names": lifecycle_nodes},
                     {"bond_timeout": 0.0},
                 ],
+                emulate_tty=True,
             ),
             Node(
                 package="planner_playground",
@@ -122,6 +129,7 @@ def generate_launch_description():
                 name="test_planner_with_rviz_node",
                 output="screen",
                 arguments=["--ros-args", "--log-level", log_level],
+                emulate_tty=True,
             ),
             Node(
                 package="rviz2",
@@ -132,6 +140,7 @@ def generate_launch_description():
                 ],
                 parameters=[{"use_sim_time": use_sim_time}],
                 output="screen",
+                emulate_tty=True,
             ),
         ]
     )

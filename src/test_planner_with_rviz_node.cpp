@@ -33,6 +33,7 @@ public:
 private:
   void goal_pose_callback(const geometry_msgs::msg::PoseStamped & msg)
   {
+    RCLCPP_INFO(this->get_logger(), "Received goal pose");
     geometry_msgs::msg::PoseStamped pose_from_rviz = msg;
     if (!start_filled) {
       goal.start = pose_from_rviz;
