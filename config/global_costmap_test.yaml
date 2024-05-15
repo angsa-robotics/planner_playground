@@ -1,4 +1,16 @@
 global_costmap:
   global_costmap:
     ros__parameters:
-      plugins: ["static_layer", "inflation_layer_global"]
+      plugins: ["static_layer", "inflation_layer"]
+      global_frame: map
+      always_send_full_costmap: True
+      rolling_window: True
+      track_unknown_space: False
+      publish_frequency: 5.0
+      update_frequency: 10.0
+      resolution: 0.05
+      width: 50
+      height: 50
+      lethal_cost_threshold: 99
+      footprint: '[ [0.215, 0.42], [0.215, -0.42], [-1.01, -0.42], [-1.01, 0.42] ]'
+      footprint_padding: 0.025

@@ -29,13 +29,13 @@ def generate_launch_description():
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["5", "5", "0", "0", "0", "0", "map", "odom"],
+                arguments=["0", "0", "0", "0", "0", "0", "map", "odom"],
                 emulate_tty=True,
             ),
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["5", "5", "0", "0", "0", "0", "odom", "base_link"],
+                arguments=["0", "0", "0", "0", "0", "0", "odom", "base_link"],
                 emulate_tty=True,
             ),
             Node(

@@ -157,6 +157,18 @@ Visualization Manager:
             Reliability Policy: Reliable
             Value: /expansions
           Value: true
+        - Class: rviz_default_plugins/MarkerArray
+          Enabled: True
+          Name: Planned Footprints SMAC
+          Namespaces:
+            {}
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /planned_footprints
+          Value: true
       Enabled: true
       Name: Planner
   Enabled: true
