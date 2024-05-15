@@ -35,6 +35,9 @@ set(dependencies
 add_executable(test_planner_with_rviz_node src/test_planner_with_rviz_node.cpp)
 ament_target_dependencies(test_planner_with_rviz_node ${dependencies})
 
+add_executable(send_goal_manually src/send_goal_manually.cpp)
+ament_target_dependencies(send_goal_manually ${dependencies})
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -45,6 +48,10 @@ endif()
 
 install(TARGETS
   test_planner_with_rviz_node
+  RUNTIME DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS
+send_goal_manually
   RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
