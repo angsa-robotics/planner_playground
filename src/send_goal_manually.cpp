@@ -21,21 +21,21 @@ int main(int argc, char **argv)
     goal.use_start = true;
     goal.start.header.frame_id = "map";
     goal.start.header.stamp = node->now();
-    goal.start.pose.position.x = 12.2644;
-    goal.start.pose.position.y = 16.654;
+    goal.start.pose.position.x = 16.3688;
+    goal.start.pose.position.y = 16.5236;
     goal.start.pose.orientation.x = 0.0;
     goal.start.pose.orientation.y = 0.0;
-    goal.start.pose.orientation.z = -0.995002;
-    goal.start.pose.orientation.w = 0.0998535;
+    goal.start.pose.orientation.z = -0.999996;
+    goal.start.pose.orientation.w = 0.00280969;
 
     goal.goal.header.frame_id = "map";
     goal.goal.header.stamp = node->now();
-    goal.goal.pose.position.x = 9.33088;
-    goal.goal.pose.position.y = 16.5078;
+    goal.goal.pose.position.x = 12.4791;
+    goal.goal.pose.position.y = 15.6501;
     goal.goal.pose.orientation.x = 0.0;
     goal.goal.pose.orientation.y = 0.0;
-    goal.goal.pose.orientation.z = -0.943523;
-    goal.goal.pose.orientation.w = 0.331307;
+    goal.goal.pose.orientation.z = 0.999517;
+    goal.goal.pose.orientation.w = 0.0310899;
     auto future_goal_handle = action_client->async_send_goal(goal);
 
     rclcpp::shutdown();
