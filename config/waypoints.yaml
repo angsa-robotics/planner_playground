@@ -1,0 +1,15 @@
+waypoints:
+  # U-turn
+  - position: {x: 19.0, y: 17.62}
+    orientation: {z: 0.7071, w: 0.7071}  # facing up
+  - position: {x: 19.0, y: 22.62}
+    orientation: {z: 0.0, w: 1.0}        # facing right
+  - position: {x: 19.5, y: 22.62}
+    orientation: {z: -0.7071, w: 0.7071} # facing down
+  - position: {x: 19.5, y: 17.62}
+    orientation: {z: -0.7071, w: 0.7071} # still facing down
+  # # Long path
+  # - position: {x: 17.6, y: 17.4}
+  #   orientation: {z: 0.4, w: 0.9}
+  # - position: {x: 14.9, y: 16.5}
+  #   orientation: {z: -0.9995, w: 0.0321}

@@ -16,6 +16,8 @@ find_package(nav2_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 
 include_directories(
@@ -29,6 +31,7 @@ set(dependencies
   rclcpp
   rclcpp_action
   geometry_msgs
+  ament_index_cpp
 )
 
 # test helper
@@ -37,7 +40,7 @@ ament_target_dependencies(test_planner_with_rviz_node ${dependencies})
 
 add_executable(send_goal_manually src/send_goal_manually.cpp)
 ament_target_dependencies(send_goal_manually ${dependencies})
-
+target_link_libraries(send_goal_manually yaml-cpp)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
