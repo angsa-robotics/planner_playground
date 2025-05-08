@@ -11,7 +11,7 @@ global_costmap:
       width: 50
       height: 50
       lethal_cost_threshold: 99
-      footprint: '[ [0.201, 0.411], [0.201, -0.411], [-0.981, -0.411], [-0.981, 0.411] ]'
+      footprint: '[ [0.415, 0.62], [0.415, -0.62], [-1.21, -0.62], [-1.21, 0.62] ]'
       footprint_padding: 0.0
       use_maximum: True
       plugins:
