@@ -75,7 +75,7 @@ def generate_launch_description():
                 respawn_delay=2.0,
                 parameters=[
                     get_package_share_directory("planner_playground")
-                    + "/config/smoother_server.yaml"
+                    + "/config/nav2.yaml"
                 ],
                 arguments=["--ros-args", "--log-level", log_level],
                 emulate_tty=True,
@@ -90,21 +90,8 @@ def generate_launch_description():
                 parameters=[
                     [
                         get_package_share_directory("planner_playground")
-                        + "/config/planner_server.yaml"
+                        + "/config/nav2.yaml"
                     ],
-                    [
-                        get_package_share_directory("planner_playground")
-                        + "/config/global_costmap.yaml"
-                    ],
-                    [
-                        get_package_share_directory("planner_playground")
-                        + "/config/global_costmap_test.yaml"
-                    ],
-                    [
-                        get_package_share_directory("planner_playground")
-                        + "/config/costmaps_plugins.yaml"
-                    ],
-                    {"GridBased.debug_visualizations": True},
                 ],
                 arguments=["--ros-args", "--log-level", log_level],
                 remappings=[("/map", "/map_amcl")],
