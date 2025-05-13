@@ -1,5 +1,5 @@
 waypoints:
-  - position: {x: 17.9268, y: 18.1973}
-    orientation: {z: 0.708873, w: 0.705336}
-  - position: {x: 14.7375, y: 15.9344}
-    orientation: {z: -0.977694, w: 0.210037} 
+  - position: {x: 20.415, y: 19.1986}
+    orientation: {z: 0.00999559, w: 0.99995}
+  - position: {x: 23.5331, y: 16.0102}
+    orientation: {z: -0.633596, w: 0.773664}
