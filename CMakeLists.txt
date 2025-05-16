@@ -38,6 +38,9 @@ set(dependencies
 add_executable(test_planner_with_rviz_node src/test_planner_with_rviz_node.cpp)
 ament_target_dependencies(test_planner_with_rviz_node ${dependencies})
 
+add_executable(test_navigator_with_rviz_node src/test_navigator_with_rviz_node.cpp)
+ament_target_dependencies(test_navigator_with_rviz_node ${dependencies})
+
 add_executable(send_goal_manually src/send_goal_manually.cpp)
 ament_target_dependencies(send_goal_manually ${dependencies})
 target_link_libraries(send_goal_manually yaml-cpp)
@@ -51,11 +54,14 @@ endif()
 
 install(TARGETS
   test_planner_with_rviz_node
+  test_navigator_with_rviz_node
   RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS
 send_goal_manually
   RUNTIME DESTINATION lib/${PROJECT_NAME})
+
+install(PROGRAMS scripts/interactive_footprint.py scripts/odom_publisher.py DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
   launch config
