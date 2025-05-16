@@ -38,16 +38,6 @@ def generate_launch_description():
                 emulate_tty=True,
             ),
             Node(
-                package="planner_playground",
-                executable="interactive_footprint.py",
-                emulate_tty=True,
-            ),
-            Node(
-                package="planner_playground",
-                executable="odom_publisher.py",
-                emulate_tty=True,
-            ),
-            Node(
                 package="nav2_map_server",
                 executable="map_server",
                 name="map_server_amcl",
@@ -118,14 +108,13 @@ def generate_launch_description():
                 ],
                 emulate_tty=True,
             ),
-            # Node(
-            #     package="planner_playground",
-            #     executable="test_navigator_with_rviz_node",
-            #     name="test_navigator_with_rviz_node",
-            #     output="screen",
-            #     arguments=["--ros-args", "--log-level", log_level],
-            #     emulate_tty=True,
-            # ),
+            Node(
+                package="planner_playground",
+                executable="simulator",
+                name="simulator",
+                output="screen",
+                emulate_tty=True,
+            ),
             Node(
                 package="rviz2",
                 executable="rviz2",

@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <root BTCPP_format="4">
   <BehaviorTree ID="MainTree">
-    <!-- <Repeat num_cycles="100"> -->
+    <ForceSuccess>
       <Sequence>
         <RateController hz="0.2">
           <ComputePathToPose goal="{goal}" path="{path}" planner_id="SMAC"/>
         </RateController>
         <FollowPath path="{path}" controller_id="TEB"/>
       </Sequence>
-    <!-- </Repeat> -->
+    </ForceSuccess>
   </BehaviorTree>
 </root>
