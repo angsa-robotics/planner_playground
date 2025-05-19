@@ -92,7 +92,7 @@ def generate_launch_description():
                 name='bt_navigator',
                 output='screen',
                 respawn=False,
-                parameters=[nav2_config_path, {"default_nav_to_pose_bt_xml": get_package_share_directory("planner_playground") + "/config/test_navigation.xml"}],
+                parameters=[nav2_config_path], # {"default_nav_to_pose_bt_xml": get_package_share_directory("planner_playground") + "/config/test_navigation.xml", "default_nav_through_poses_bt_xml": get_package_share_directory("planner_playground") + "/config/test_navigation.xml"}],
                 arguments=['--ros-args', '--log-level', log_level],
             ),
             Node(
@@ -114,6 +114,7 @@ def generate_launch_description():
                 name="simulator",
                 output="screen",
                 emulate_tty=True,
+                parameters=[{"initial_x": 0.0, "initial_y": 0.0}],
             ),
             Node(
                 package="rviz2",

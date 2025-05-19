@@ -10,6 +10,7 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "nav2_msgs/action/compute_path_through_poses.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "nav2_msgs/action/navigate_through_waypoints.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/pose_array.hpp"
 #include <yaml-cpp/yaml.h>
@@ -23,10 +24,17 @@ class SimulatorNode : public rclcpp::Node
 {
 public:
     SimulatorNode()
-        : Node("simulator_node"),
-          initial_x_(20.0),
-          initial_y_(21.0)
+        : Node("simulator_node")
     {
+        this->declare_parameter<double>("initial_x", 0.0);
+        this->declare_parameter<double>("initial_y", 0.0);
+
+        double initial_x = this->get_parameter("initial_x").as_double();
+        double initial_y = this->get_parameter("initial_y").as_double();
+
+        // Use initial_x and initial_y in the simulator logic
+        RCLCPP_INFO(this->get_logger(), "Initial position: x=%f, y=%f", initial_x, initial_y);
+
         // Initialize transform broadcaster
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
@@ -73,13 +81,9 @@ public:
         timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&SimulatorNode::publishTransform, this));
 
         // Create service to trigger action client
-        service_ = this->create_service<std_srvs::srv::Trigger>("trigger_action", std::bind(&SimulatorNode::triggerAction, this, std::placeholders::_1, std::placeholders::_2));
+        service_ = this->create_service<std_srvs::srv::Trigger>("send_poses", std::bind(&SimulatorNode::triggerAction, this, std::placeholders::_1, std::placeholders::_2));
 
-        navigate_to_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
-
-        // Initialize action client
-        action_client_ = rclcpp_action::create_client<nav2_msgs::action::ComputePathThroughPoses>(this, "compute_path_through_poses");
-        poses_publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("waypoints", rclcpp::QoS(10));
+        navigate_through_waypoints_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateThroughWaypoints>(this, "navigate_through_waypoints");
 
         // Create odometry publisher
         odom_publisher_ = this->create_publisher<nav_msgs::msg::Odometry>("/odometry/encoders", 10);
@@ -111,16 +115,6 @@ private:
     void triggerAction(const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
                        std::shared_ptr<std_srvs::srv::Trigger::Response> response)
     {
-        if (!action_client_->wait_for_action_server(std::chrono::seconds(5)))
-        {
-            RCLCPP_ERROR(this->get_logger(), "Action server not available");
-            response->success = false;
-            response->message = "Action server not available";
-            return;
-        }
-
-        auto goal = nav2_msgs::action::ComputePathThroughPoses::Goal();
-        goal.use_start = true;
         std::string yaml_path = ament_index_cpp::get_package_share_directory("planner_playground") + "/config/waypoints.yaml";
         auto waypoints = loadWaypoints(yaml_path);
 
@@ -134,17 +128,22 @@ private:
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
         // Send a goal to the navigate_to_pose action server with the second waypoint
-        if (!navigate_to_pose_client_->wait_for_action_server(std::chrono::seconds(5)))
+        if (!navigate_through_waypoints_client_->wait_for_action_server(std::chrono::seconds(5)))
         {
-            RCLCPP_ERROR(this->get_logger(), "NavigateToPose action server not available");
+            RCLCPP_ERROR(this->get_logger(), "NavigateThroughWaypoints action server not available");
             response->success = false;
-            response->message = "NavigateToPose action server not available";
+            response->message = "NavigateThroughWaypoints action server not available";
             return;
         }
 
-        auto navigate_goal = nav2_msgs::action::NavigateToPose::Goal();
-        navigate_goal.pose = waypoints[1];
-        navigate_to_pose_client_->async_send_goal(navigate_goal);
+        auto goal = nav2_msgs::action::NavigateThroughWaypoints::Goal();
+        for (size_t i = 1; i < waypoints.size(); ++i)
+        {   
+            nav2_msgs::msg::Waypoint waypoint;
+            waypoint.pose = waypoints[i];
+            goal.poses.push_back(waypoint);
+        }
+        navigate_through_waypoints_client_->async_send_goal(goal);
 
         response->success = true;
         response->message = "Action triggered successfully";
@@ -183,9 +182,7 @@ private:
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     std::shared_ptr<interactive_markers::InteractiveMarkerServer> marker_server_;
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp_action::Client<nav2_msgs::action::ComputePathThroughPoses>::SharedPtr action_client_;
-    rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr navigate_to_pose_client_;
-    rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr poses_publisher_;
+    rclcpp_action::Client<nav2_msgs::action::NavigateThroughWaypoints>::SharedPtr navigate_through_waypoints_client_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_publisher_;
     rclcpp::TimerBase::SharedPtr odom_timer_;

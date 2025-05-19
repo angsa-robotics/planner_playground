@@ -4,7 +4,7 @@
     <ForceSuccess>
       <Sequence>
         <RateController hz="0.2">
-          <ComputePathToPose goal="{goal}" path="{path}" planner_id="SMAC"/>
+          <ComputePathThroughPoses goals="{goals}" path="{path}" planner_id="SMAC"/>
         </RateController>
         <FollowPath path="{path}" controller_id="TEB"/>
       </Sequence>

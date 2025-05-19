@@ -39,15 +39,9 @@ set(dependencies
   tf2_geometry_msgs
   std_srvs
   nav_msgs
+  visualization_msgs
+  interactive_markers
 )
-
-# Add visualization_msgs to dependencies
-list(APPEND dependencies visualization_msgs)
-
-# Add interactive_markers to dependencies
-list(APPEND dependencies interactive_markers)
-
-
 
 add_executable(simulator src/simulator.cpp)
 ament_target_dependencies(simulator ${dependencies})
