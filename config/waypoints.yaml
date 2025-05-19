@@ -1,5 +1,14 @@
 waypoints:
-  - position: {x: 17.8724, y: 24.1413, z: 0}
-    orientation: {x: 0, y: 0, z: 0.708872, w: 0.705338}
-  - position: {x: 19.1629, y: 22.2263, z: 0}
-    orientation: {x: 0, y: 0, z: -0.647282, w: 0.762251}
+  # Straight line forward
+  # - pose: {x: 0.0, y: 0.0, yaw: 0}
+  # - pose: {x: 2.0, y: 0.0, yaw: 0}
+  # - pose: {x: 4.0, y: 0.0, yaw: 0}
+  # Straight line backward
+  # - pose: {x: 0.0, y: 0.0, yaw: 0}
+  # - pose: {x: -2.0, y: 0.0, yaw: 0}
+  # - pose: {x: -4.0, y: 0.0, yaw: 0}
+  # U-turn
+  - pose: {x: 0.0, y: 0.0, yaw: 0}
+  - pose: {x: 2.0, y: 0.0, yaw: 1.57}
+  - pose: {x: 2.0, y: 2.0, yaw: 3.14}
+  - pose: {x: 0.0, y: 2.0, yaw: 3.14}

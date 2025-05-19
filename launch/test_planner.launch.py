@@ -10,7 +10,6 @@ from launch_ros.actions import Node, SetParameter
 
 def generate_launch_description():
     # Get the launch directory
-    use_sim_time = LaunchConfiguration("use_sim_time", default="false")
     log_level = LaunchConfiguration("log_level")
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
@@ -20,12 +19,18 @@ def generate_launch_description():
     declare_log_level_cmd = DeclareLaunchArgument(
         "log_level", default_value="info", description="log level"
     )
+    declare_nav2_config_path = DeclareLaunchArgument(
+        "nav2_config_path",
+        default_value=path.join(
+            get_package_share_directory("planner_playground"), "config", "nav2.yaml"
+        ),
+        description="Path to the nav2 config file",
+    )
 
-    lifecycle_nodes = ["smoother_server", "planner_server"]
-
+    lifecycle_nodes = ["planner_server", "controller_server", "bt_navigator"]
+    nav2_config_path = [LaunchConfiguration("nav2_config_path")]
     load_nodes = GroupAction(
         actions=[
-            SetParameter("use_sim_time", use_sim_time),
             Node(
                 package="tf2_ros",
                 executable="static_transform_publisher",
@@ -33,17 +38,10 @@ def generate_launch_description():
                 emulate_tty=True,
             ),
             Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=["0", "0", "0", "0", "0", "0", "odom", "base_link"],
-                emulate_tty=True,
-            ),
-            Node(
                 package="nav2_map_server",
                 executable="map_server",
                 name="map_server_amcl",
                 parameters=[
-                    {"use_sim_time": use_sim_time},
                     {"topic_name": "map_amcl"},
                     {"yaml_filename": get_package_share_directory("planner_playground")
                                       + "/config/map.yaml"},
@@ -56,7 +54,6 @@ def generate_launch_description():
                 executable="lifecycle_manager",
                 name="lifecycle_manager_map_server_amcl",
                 parameters=[
-                    {"use_sim_time": use_sim_time},
                     {"bond_timeout": 0.0},
                     {
                         "autostart": True
@@ -67,35 +64,36 @@ def generate_launch_description():
                 emulate_tty=True,
             ),
             Node(
-                package="nav2_smoother",
-                executable="smoother_server",
-                name="smoother_server",
-                output="screen",
-                respawn=False,
-                respawn_delay=2.0,
-                parameters=[
-                    get_package_share_directory("planner_playground")
-                    + "/config/nav2.yaml"
-                ],
-                arguments=["--ros-args", "--log-level", log_level],
-                emulate_tty=True,
-            ),
-            Node(
                 package="nav2_planner",
                 executable="planner_server",
                 name="planner_server",
                 output="screen",
                 respawn=False,
                 respawn_delay=2.0,
-                parameters=[
-                    [
-                        get_package_share_directory("planner_playground")
-                        + "/config/nav2.yaml"
-                    ],
-                ],
+                parameters=nav2_config_path,
                 arguments=["--ros-args", "--log-level", log_level],
                 remappings=[("/map", "/map_amcl")],
                 emulate_tty=True,
+            ),
+            Node(
+                package="nav2_controller",
+                executable="controller_server",
+                name="controller_server",
+                output="screen",
+                respawn=False,
+                respawn_delay=2.0,
+                parameters=nav2_config_path,
+                arguments=["--ros-args", "--log-level", log_level],
+                emulate_tty=True,
+            ),
+            Node(
+                package='nav2_bt_navigator',
+                executable='bt_navigator',
+                name='bt_navigator',
+                output='screen',
+                respawn=False,
+                parameters=[nav2_config_path], # {"default_nav_to_pose_bt_xml": get_package_share_directory("planner_playground") + "/config/test_navigation.xml", "default_nav_through_poses_bt_xml": get_package_share_directory("planner_playground") + "/config/test_navigation.xml"}],
+                arguments=['--ros-args', '--log-level', log_level],
             ),
             Node(
                 package="nav2_lifecycle_manager",
@@ -112,11 +110,11 @@ def generate_launch_description():
             ),
             Node(
                 package="planner_playground",
-                executable="test_planner_with_rviz_node",
-                name="test_planner_with_rviz_node",
+                executable="simulator",
+                name="simulator",
                 output="screen",
-                arguments=["--ros-args", "--log-level", log_level],
                 emulate_tty=True,
+                parameters=[{"initial_x": 0.0, "initial_y": 0.0}],
             ),
             Node(
                 package="rviz2",
@@ -125,8 +123,11 @@ def generate_launch_description():
                     "-d",
                     [get_package_share_directory("planner_playground"), "/config/", "nav.rviz"],
                 ],
-                parameters=[{"use_sim_time": use_sim_time}],
+                parameters=[{"use_sim_time": False}],
                 output="screen",
+                remappings=[
+                    ("/goal_pose", "/goal_poses"),
+                ],
                 emulate_tty=True,
             ),
         ]
@@ -135,6 +136,7 @@ def generate_launch_description():
     # Define LaunchDescription variable
     ld = LaunchDescription()
     ld.add_action(stdout_linebuf_envvar)
+    ld.add_action(declare_nav2_config_path)
     ld.add_action(declare_log_level_cmd)
     ld.add_action(load_nodes)
     return ld

@@ -18,7 +18,11 @@ find_package(rclcpp_action REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
-
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(interactive_markers REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 include_directories(
   include
@@ -32,15 +36,16 @@ set(dependencies
   rclcpp_action
   geometry_msgs
   ament_index_cpp
+  tf2_geometry_msgs
+  std_srvs
+  nav_msgs
+  visualization_msgs
+  interactive_markers
 )
 
-# test helper
-add_executable(test_planner_with_rviz_node src/test_planner_with_rviz_node.cpp)
-ament_target_dependencies(test_planner_with_rviz_node ${dependencies})
-
-add_executable(send_goal_manually src/send_goal_manually.cpp)
-ament_target_dependencies(send_goal_manually ${dependencies})
-target_link_libraries(send_goal_manually yaml-cpp)
+add_executable(simulator src/simulator.cpp)
+ament_target_dependencies(simulator ${dependencies})
+target_link_libraries(simulator yaml-cpp)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -49,13 +54,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-install(TARGETS
-  test_planner_with_rviz_node
-  RUNTIME DESTINATION lib/${PROJECT_NAME})
-
-install(TARGETS
-send_goal_manually
-  RUNTIME DESTINATION lib/${PROJECT_NAME})
+install(TARGETS simulator RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
   launch config
