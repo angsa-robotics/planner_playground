@@ -125,6 +125,9 @@ def generate_launch_description():
                 ],
                 parameters=[{"use_sim_time": False}],
                 output="screen",
+                remappings=[
+                    ("/goal_pose", "/goal_poses"),
+                ],
                 emulate_tty=True,
             ),
         ]
