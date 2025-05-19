@@ -1,0 +1,8 @@
+bt_navigator:
+  ros__parameters:
+    default_nav_through_waypoints_bt_xml: /home/angsa/underlay_ws/src/planner_playground/config/test_navigation.xml
+
+controller_server:
+  ros__parameters:
+    progress_checker:
+      movement_time_allowance: 0.1

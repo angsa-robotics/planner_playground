@@ -21,9 +21,6 @@ def generate_launch_description():
     )
     declare_nav2_config_path = DeclareLaunchArgument(
         "nav2_config_path",
-        default_value=path.join(
-            get_package_share_directory("planner_playground"), "config", "nav2.yaml"
-        ),
         description="Path to the nav2 config file",
     )
 
@@ -53,13 +50,7 @@ def generate_launch_description():
                 package="nav2_lifecycle_manager",
                 executable="lifecycle_manager",
                 name="lifecycle_manager_map_server_amcl",
-                parameters=[
-                    {"bond_timeout": 0.0},
-                    {
-                        "autostart": True
-                    },
-                    {"node_names": ["map_server_amcl"]},
-                ],
+                parameters=[{"autostart": True, "node_names": ["map_server_amcl"], "bond_timeout": 0.0}],
                 output="screen",
                 emulate_tty=True,
             ),
@@ -68,9 +59,9 @@ def generate_launch_description():
                 executable="planner_server",
                 name="planner_server",
                 output="screen",
-                respawn=False,
-                respawn_delay=2.0,
-                parameters=nav2_config_path,
+                parameters=[*nav2_config_path, path.join(
+                get_package_share_directory("planner_playground"), "config", "nav2_overrides.yaml"
+                )],
                 arguments=["--ros-args", "--log-level", log_level],
                 remappings=[("/map", "/map_amcl")],
                 emulate_tty=True,
@@ -80,9 +71,9 @@ def generate_launch_description():
                 executable="controller_server",
                 name="controller_server",
                 output="screen",
-                respawn=False,
-                respawn_delay=2.0,
-                parameters=nav2_config_path,
+                parameters=[*nav2_config_path, path.join(
+                get_package_share_directory("planner_playground"), "config", "nav2_overrides.yaml"
+                )],
                 arguments=["--ros-args", "--log-level", log_level],
                 emulate_tty=True,
             ),
@@ -91,8 +82,9 @@ def generate_launch_description():
                 executable='bt_navigator',
                 name='bt_navigator',
                 output='screen',
-                respawn=False,
-                parameters=[nav2_config_path], # {"default_nav_to_pose_bt_xml": get_package_share_directory("planner_playground") + "/config/test_navigation.xml", "default_nav_through_poses_bt_xml": get_package_share_directory("planner_playground") + "/config/test_navigation.xml"}],
+                parameters=[*nav2_config_path, path.join(
+                get_package_share_directory("planner_playground"), "config", "nav2_overrides.yaml"
+                )],
                 arguments=['--ros-args', '--log-level', log_level],
             ),
             Node(
@@ -102,9 +94,7 @@ def generate_launch_description():
                 output="screen",
                 arguments=["--ros-args", "--log-level", log_level],
                 parameters=[
-                    {"autostart": True},
-                    {"node_names": lifecycle_nodes},
-                    {"bond_timeout": 0.0},
+                    {"autostart": True, "node_names": lifecycle_nodes, "bond_timeout": 0.0},
                 ],
                 emulate_tty=True,
             ),
