@@ -19,6 +19,7 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "nav_msgs/msg/path.hpp"
 
 class SimulatorNode : public rclcpp::Node
 {
@@ -90,6 +91,17 @@ public:
 
         // Create timer to publish odometry
         odom_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&SimulatorNode::publishOdometry, this));
+
+        // Subscriber to mission/path topic
+        path_subscriber_ = this->create_subscription<nav_msgs::msg::Path>(
+            "mission/path", 10,
+            [this](const nav_msgs::msg::Path::SharedPtr msg) {
+                latest_path_ = *msg;
+            });
+
+        // New service to send poses from subscribed topic
+        send_path_service_ = this->create_service<std_srvs::srv::Trigger>(
+            "send_path", std::bind(&SimulatorNode::sendPathCallback, this, std::placeholders::_1, std::placeholders::_2));
     }
 
 private:
@@ -149,6 +161,35 @@ private:
         response->message = "Action triggered successfully";
     }
 
+    void sendPathCallback(const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+                          std::shared_ptr<std_srvs::srv::Trigger::Response> response)
+    {
+        if (latest_path_.poses.empty()) {
+            response->success = false;
+            response->message = "No path received on mission/path topic";
+            return;
+        }
+
+        if (!navigate_through_waypoints_client_->wait_for_action_server(std::chrono::seconds(5))) {
+            RCLCPP_ERROR(this->get_logger(), "NavigateThroughWaypoints action server not available");
+            response->success = false;
+            response->message = "NavigateThroughWaypoints action server not available";
+            return;
+        }
+
+        auto goal = nav2_msgs::action::NavigateThroughWaypoints::Goal();
+        for (const auto &pose : latest_path_.poses) {
+            nav2_msgs::msg::Waypoint waypoint;
+            waypoint.pose = pose;
+            goal.poses.push_back(waypoint);
+        }
+
+        navigate_through_waypoints_client_->async_send_goal(goal);
+
+        response->success = true;
+        response->message = "Path sent successfully";
+    }
+
     std::vector<geometry_msgs::msg::PoseStamped> loadWaypoints(const std::string &filename)
     {
         std::vector<geometry_msgs::msg::PoseStamped> waypoints;
@@ -186,6 +227,9 @@ private:
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_publisher_;
     rclcpp::TimerBase::SharedPtr odom_timer_;
+    rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_subscriber_;
+    nav_msgs::msg::Path latest_path_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr send_path_service_;
 };
 
 int main(int argc, char **argv)

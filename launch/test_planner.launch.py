@@ -6,6 +6,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node, SetParameter
+from launch.actions import ExecuteProcess
 
 
 def generate_launch_description():
@@ -118,6 +119,12 @@ def generate_launch_description():
                 remappings=[
                     ("/goal_pose", "/goal_poses"),
                 ],
+                emulate_tty=True,
+            ),
+            ExecuteProcess(
+                cmd=["ros2", "bag", "play", path.join(
+                get_package_share_directory("planner_playground"), "config", "path.mcap")],
+                output="screen",
                 emulate_tty=True,
             ),
         ]
