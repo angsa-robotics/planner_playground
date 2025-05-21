@@ -205,7 +205,7 @@ Visualization Manager:
             Value: /waypoints
           Value: true
         - Class: rviz_default_plugins/MarkerArray
-          Enabled: true
+          Enabled: false
           Name: Planned Footprints SMAC
           Namespaces:
             planned_footprint: true
@@ -266,10 +266,9 @@ Visualization Manager:
           Value: true
         - Class: rviz_default_plugins/Marker
           Enabled: true
-          Name: Marker
+          Name: TEB Markers
           Namespaces:
-            InfeasibleRobotPoses: true
-            PolyObstacles: true
+            TebContainer: true
             ViaPoints: true
           Topic:
             Depth: 5
@@ -288,7 +287,7 @@ Visualization Manager:
           Enabled: true
           Head Length: 0.07000000029802322
           Head Radius: 0.029999999329447746
-          Name: PoseArray
+          Name: TEB Poses
           Shaft Length: 0.23000000417232513
           Shaft Radius: 0.009999999776482582
           Shape: Arrow (Flat)
@@ -299,6 +298,18 @@ Visualization Manager:
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /teb_poses
+          Value: true
+        - Class: rviz_default_plugins/MarkerArray
+          Enabled: true
+          Name: TEB Footprints
+          Namespaces:
+            RobotFootprints: true
+          Topic:
+            Depth: 5
+            Durability Policy: Volatile
+            History Policy: Keep Last
+            Reliability Policy: Reliable
+            Value: /teb_footprints
           Value: true
       Enabled: true
       Name: Controller
