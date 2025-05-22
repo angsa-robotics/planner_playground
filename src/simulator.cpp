@@ -16,16 +16,18 @@
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 #include "ament_index_cpp/get_package_share_directory.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "nav_msgs/msg/path.hpp"
+#include "tf2_ros/buffer.h"
+#include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 class SimulatorNode : public rclcpp::Node
 {
 public:
     SimulatorNode()
-        : Node("simulator_node")
+        : Node("simulator_node"), tf_buffer_(this->get_clock()), tf_listener_(tf_buffer_)
     {
         this->declare_parameter<double>("initial_x", 0.0);
         this->declare_parameter<double>("initial_y", 0.0);
@@ -40,8 +42,8 @@ public:
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
         // Initialize transform
-        transform_.header.frame_id = "odom";
-        transform_.child_frame_id = "base_footprint";
+        transform_.header.frame_id = "map";
+        transform_.child_frame_id = "odom";
         transform_.transform.translation.x = initial_x_;
         transform_.transform.translation.y = initial_y_;
         transform_.transform.translation.z = 0.0;
@@ -55,7 +57,7 @@ public:
 
         // Create interactive marker
         visualization_msgs::msg::InteractiveMarker int_marker;
-        int_marker.header.frame_id = "odom";
+        int_marker.header.frame_id = "map";
         int_marker.header.stamp = this->now();
         int_marker.name = "base_footprint_marker";
         int_marker.scale = 1.0;
@@ -107,9 +109,26 @@ public:
 private:
     void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback)
     {
-        transform_.transform.translation.x = feedback->pose.position.x;
-        transform_.transform.translation.y = feedback->pose.position.y;
-        transform_.transform.translation.z = feedback->pose.position.z;
+        // Get marker pose (map->base_footprint)
+        geometry_msgs::msg::Pose map_to_base_footprint = feedback->pose;
+        geometry_msgs::msg::TransformStamped odom_to_base_footprint;
+        try {
+            std::string odom_frame = "odom";
+            std::string base_frame = "base_footprint";
+            odom_to_base_footprint = tf_buffer_.lookupTransform(
+                odom_frame, base_frame, rclcpp::Time(0), rclcpp::Duration::from_seconds(0.1));
+        } catch (const tf2::TransformException &ex) {
+            RCLCPP_WARN(this->get_logger(), "Could not get odom->base_footprint: %s", ex.what());
+            return;
+        }
+        // Convert to tf2
+        tf2::Transform tf_map_base_footprint, tf_odom_base_footprint;
+        tf2::fromMsg(map_to_base_footprint, tf_map_base_footprint);
+        tf2::fromMsg(odom_to_base_footprint.transform, tf_odom_base_footprint);
+        // Compute map->odom
+        tf2::Transform tf_map_odom = tf_map_base_footprint * tf_odom_base_footprint.inverse();
+        geometry_msgs::msg::Transform map_to_odom_msg = tf2::toMsg(tf_map_odom);
+        transform_.transform = map_to_odom_msg;
     }
 
     void publishTransform()
@@ -230,6 +249,8 @@ private:
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_subscriber_;
     nav_msgs::msg::Path latest_path_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr send_path_service_;
+    tf2_ros::Buffer tf_buffer_;
+    tf2_ros::TransformListener tf_listener_;
 };
 
 int main(int argc, char **argv)

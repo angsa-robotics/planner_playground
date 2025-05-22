@@ -6,6 +6,7 @@ controller_server:
   ros__parameters:
     progress_checker:
       movement_time_allowance: 0.1
+      failure_tolerance: 0.3
 
 planner_server:
   ros__parameters:
@@ -15,11 +16,15 @@ planner_server:
 local_costmap:
   local_costmap:
     ros__parameters:
-      plugins:
-        - 'inflation_layer'
+      # plugins:
+      #   - 'inflation_layer'
+      static_layer_geofence:
+        map_topic: /map_amcl
 
 global_costmap:
   global_costmap:
     ros__parameters:
-      plugins:
-        - 'inflation_layer'
+      # plugins:
+      #   - 'inflation_layer'
+      static_layer_geofence:
+        map_topic: /map_amcl
