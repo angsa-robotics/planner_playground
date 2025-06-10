@@ -8,7 +8,8 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
 from launch.substitutions import Command
-
+from launch_ros.descriptions import ParameterFile
+from nav2_common.launch import RewrittenYaml
 
 def generate_launch_description():
     # Get the launch directory
@@ -31,9 +32,21 @@ def generate_launch_description():
         description="Path to the ros2_control config file",
     )
 
-    lifecycle_nodes = ["planner_server", "controller_server", "bt_navigator"]
+
+    lifecycle_nodes = ["planner_server", "bt_navigator"]
     nav2_config_path = [LaunchConfiguration("nav2_config_path")]
     ros2_control_config_path = [LaunchConfiguration("ros2_control_config")]
+    configured_params = ParameterFile(
+        RewrittenYaml(
+            source_file=nav2_config_path,
+            root_key="",
+            param_rewrites={"default_nav_through_poses_bt_xml": path.join(
+                get_package_share_directory("planner_playground"), "config", "test_navigation.xml"
+                )},
+            convert_types=True,
+        ),
+        allow_substs=True,
+    )
     nav2 = GroupAction(
         actions=[
             Node(
@@ -68,25 +81,23 @@ def generate_launch_description():
                 remappings=[("/map", "/map_amcl")],
                 emulate_tty=True,
             ),
-            Node(
-                package="nav2_controller",
-                executable="controller_server",
-                name="controller_server",
-                output="screen",
-                parameters=[*nav2_config_path, path.join(
-                get_package_share_directory("planner_playground"), "config", "nav2_overrides.yaml"
-                )],
-                arguments=["--ros-args", "--log-level", log_level],
-                emulate_tty=True,
-            ),
+            # Node(
+            #     package="nav2_controller",
+            #     executable="controller_server",
+            #     name="controller_server",
+            #     output="screen",
+            #     parameters=[*nav2_config_path, path.join(
+            #     get_package_share_directory("planner_playground"), "config", "nav2_overrides.yaml"
+            #     )],
+            #     arguments=["--ros-args", "--log-level", log_level],
+            #     emulate_tty=True,
+            # ),
             Node(
                 package='nav2_bt_navigator',
                 executable='bt_navigator',
                 name='bt_navigator',
                 output='screen',
-                parameters=[*nav2_config_path, path.join(
-                get_package_share_directory("planner_playground"), "config", "nav2_overrides.yaml"
-                )],
+                parameters=[configured_params],
                 arguments=['--ros-args', '--log-level', log_level],
             ),
             Node(
