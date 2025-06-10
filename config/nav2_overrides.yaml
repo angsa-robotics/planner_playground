@@ -20,6 +20,7 @@ local_costmap:
       #   - 'inflation_layer'
       static_layer_geofence:
         map_topic: /map_amcl
+        footprint_clearing_enabled: false
 
 global_costmap:
   global_costmap:
@@ -28,3 +29,4 @@ global_costmap:
       #   - 'inflation_layer'
       static_layer_geofence:
         map_topic: /map_amcl
+        footprint_clearing_enabled: false
