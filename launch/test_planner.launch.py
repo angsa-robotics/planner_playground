@@ -140,6 +140,12 @@ def generate_launch_description():
         ]
     )
 
+    static_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
+    )
+
     ros2_control = GroupAction(
         actions=[
             Node(
@@ -184,8 +190,9 @@ def generate_launch_description():
     ld = LaunchDescription()
     ld.add_action(stdout_linebuf_envvar)
     ld.add_action(declare_nav2_config_path)
-    ld.add_action(declare_ros2_control_config)
+    # ld.add_action(declare_ros2_control_config)
     ld.add_action(declare_log_level_cmd)
     ld.add_action(nav2)
-    ld.add_action(ros2_control)
+    ld.add_action(static_tf)
+    # ld.add_action(ros2_control)
     return ld
