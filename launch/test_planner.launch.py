@@ -22,20 +22,22 @@ def generate_launch_description():
     declare_log_level_cmd = DeclareLaunchArgument(
         "log_level", default_value="info", description="log level"
     )
-    declare_nav2_config_path = DeclareLaunchArgument(
-        "nav2_config_path",
-        description="Path to the nav2 config file",
-    )
+    # declare_nav2_config_path = DeclareLaunchArgument(
+    #     "nav2_config_path",
+    #     description="Path to the nav2 config file",
+    # )
 
-    declare_ros2_control_config = DeclareLaunchArgument(
-        "ros2_control_config",
-        description="Path to the ros2_control config file",
-    )
+    # declare_ros2_control_config = DeclareLaunchArgument(
+    #     "ros2_control_config",
+    #     description="Path to the ros2_control config file",
+    # )
 
 
     lifecycle_nodes = ["planner_server", "bt_navigator"]
-    nav2_config_path = [LaunchConfiguration("nav2_config_path")]
-    ros2_control_config_path = [LaunchConfiguration("ros2_control_config")]
+    nav2_config_path = path.join(
+                get_package_share_directory("planner_playground"), "config", "nav2_overrides.yaml"
+                )
+    # ros2_control_config_path = [LaunchConfiguration("ros2_control_config")]
     configured_params = ParameterFile(
         RewrittenYaml(
             source_file=nav2_config_path,
@@ -74,9 +76,7 @@ def generate_launch_description():
                 executable="planner_server",
                 name="planner_server",
                 output="screen",
-                parameters=[*nav2_config_path, path.join(
-                get_package_share_directory("planner_playground"), "config", "nav2_overrides.yaml"
-                )],
+                parameters=[configured_params],
                 arguments=["--ros-args", "--log-level", log_level],
                 remappings=[("/map", "/map_amcl")],
                 emulate_tty=True,
@@ -157,50 +157,50 @@ def generate_launch_description():
         arguments=["0", "0", "0", "0", "0", "0", "odom", "base_footprint"],
     )
 
-    ros2_control = GroupAction(
-        actions=[
-            Node(
-                    package="robot_state_publisher",
-                    executable="robot_state_publisher",
-                    name="robot_state_publisher",
-                    parameters=[
-                        {
-                            "publish_frequency": 10.0,
-                            "robot_description": robot_description_content,
-                        }
-                    ],
-                    output="screen",
-                    emulate_tty=True,
-                ),
-            Node(
-                package="controller_manager",
-                executable="ros2_control_node",
-                parameters=[*ros2_control_config_path, path.join(
-                get_package_share_directory("planner_playground"), "config", "ros2_control_overrides.yaml"
-                )],
-                output="screen",
-                remappings=[
-                    ("~/robot_description", "/robot_description"),
-                    ("~/cmd_vel", "/cmd_vel"),
-                    ("~/odom", "/odometry/encoders"),
-                ],
-                emulate_tty=True,
-            ),
-            Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=[
-                    "diff_drive_controller",
-                ],
-                emulate_tty=True,
-            ),
-        ],
-    )
+    # ros2_control = GroupAction(
+    #     actions=[
+    #         Node(
+    #                 package="robot_state_publisher",
+    #                 executable="robot_state_publisher",
+    #                 name="robot_state_publisher",
+    #                 parameters=[
+    #                     {
+    #                         "publish_frequency": 10.0,
+    #                         "robot_description": robot_description_content,
+    #                     }
+    #                 ],
+    #                 output="screen",
+    #                 emulate_tty=True,
+    #             ),
+    #         Node(
+    #             package="controller_manager",
+    #             executable="ros2_control_node",
+    #             parameters=[*ros2_control_config_path, path.join(
+    #             get_package_share_directory("planner_playground"), "config", "ros2_control_overrides.yaml"
+    #             )],
+    #             output="screen",
+    #             remappings=[
+    #                 ("~/robot_description", "/robot_description"),
+    #                 ("~/cmd_vel", "/cmd_vel"),
+    #                 ("~/odom", "/odometry/encoders"),
+    #             ],
+    #             emulate_tty=True,
+    #         ),
+    #         Node(
+    #             package="controller_manager",
+    #             executable="spawner",
+    #             arguments=[
+    #                 "diff_drive_controller",
+    #             ],
+    #             emulate_tty=True,
+    #         ),
+    #     ],
+    # )
 
     # Define LaunchDescription variable
     ld = LaunchDescription()
     ld.add_action(stdout_linebuf_envvar)
-    ld.add_action(declare_nav2_config_path)
+    # ld.add_action(declare_nav2_config_path)
     # ld.add_action(declare_ros2_control_config)
     ld.add_action(declare_log_level_cmd)
     ld.add_action(nav2)

@@ -1,26 +1,82 @@
+
 bt_navigator:
   ros__parameters:
-    default_nav_through_poses_bt_xml: /home/angsa/underlay_ws/src/planner_playground/config/test_navigation.xml
+    global_frame: map
+    robot_base_frame: base_footprint
+    odom_topic: /odometry/encoders
+    bt_loop_duration: 30
+    default_server_timeout: 200
+    wait_for_service_timeout: 10000
+    always_reload_bt_xml: true
+    navigators: ["navigate_through_poses"]
+    navigate_through_poses:
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+      enable_groot_monitoring: false
+    default_nav_through_poses_bt_xml: "overriden in launch file"
+    error_code_name_prefixes:
+      - compute_path
+      - follow_path
 
 planner_server:
   ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["SMAC"]
     SMAC:
+      plugin: "nav2_smac_planner::SmacPlannerHybrid"
+      tolerance: 0.2
+      downsample_costmap: false
+      downsampling_factor: 1
+      allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 1.5
+      motion_model_for_search: "REEDS_SHEPP"
+      angle_quantization_bins: 64
+      analytic_expansion_ratio: 3.5
+      analytic_expansion_max_length: 1.5
+      minimum_turning_radius: 0.08
+      reverse_penalty: 5.0
+      change_penalty: 0.0
+      non_straight_penalty: 3.0
+      retrospective_penalty: 0.015
+      cost_penalty: 5.5
+      lookup_table_size: 10.0
+      cache_obstacle_heuristic: False
       debug_visualizations: True
-
-local_costmap:
-  local_costmap:
-    ros__parameters:
-      # plugins:
-      #   - 'inflation_layer'
-      static_layer_geofence:
-        map_topic: /map_amcl
-        footprint_clearing_enabled: false
+      smooth_path: False
+      smoother:
+        max_iterations: 1000
+        w_smooth: 0.3
+        w_data: 0.2
+        tolerance: 1.0e-10
 
 global_costmap:
   global_costmap:
     ros__parameters:
-      # plugins:
-      #   - 'inflation_layer'
+      global_frame: map
+      map_topic: /no_global_map_topic
+      always_send_full_costmap: True
+      rolling_window: True
+      track_unknown_space: False
+      publish_frequency: 5.0
+      update_frequency: 10.0
+      resolution: 0.05
+      width: 50
+      height: 50
+      lethal_cost_threshold: 100
+      robot_base_frame: base_footprint
+      footprint: '[ [0.201, 0.411], [0.201, -0.411], [-0.981, -0.411], [-0.981, 0.411] ]'
+      footprint_padding: 0.0
+      use_maximum: True
+      plugins:
+        - 'static_layer_geofence'
+        - 'inflation_layer'
       static_layer_geofence:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
         map_topic: /map_amcl
-        footprint_clearing_enabled: false
+        footprint_clearing_enabled: False
+      inflation_layer: 
+        plugin: 'nav2_costmap_2d::InflationLayer'
+        cost_scaling_factor: 3.0
+        inflation_radius: 1.126610 # Circumscribed radius
