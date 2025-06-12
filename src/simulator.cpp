@@ -76,6 +76,31 @@ public:
         move_control.always_visible = true;
         int_marker.controls.push_back(move_control);
 
+        // Add rotation control for yaw with visual marker
+        visualization_msgs::msg::InteractiveMarkerControl rotate_control;
+        rotate_control.name = "rotate_z";
+        rotate_control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
+        rotate_control.orientation.w = 0.707;
+        rotate_control.orientation.x = 0.0;
+        rotate_control.orientation.y = 0.707;
+        rotate_control.orientation.z = 0.0;
+        rotate_control.always_visible = true;
+        
+        // Add a visual marker for the rotation control
+        visualization_msgs::msg::Marker rotation_marker;
+        rotation_marker.type = visualization_msgs::msg::Marker::CYLINDER;
+        rotation_marker.scale.x = 0.1;
+        rotation_marker.scale.y = 0.1;
+        rotation_marker.scale.z = 0.02;
+        rotation_marker.color.r = 0.0;
+        rotation_marker.color.g = 0.8;
+        rotation_marker.color.b = 0.0;
+        rotation_marker.color.a = 0.8;
+        rotation_marker.pose.position.z = 0.1;  // Offset it slightly above the move plane
+        rotate_control.markers.push_back(rotation_marker);
+        
+        int_marker.controls.push_back(rotate_control);
+
         // Insert marker and set feedback callback
         marker_server_->insert(int_marker, std::bind(&SimulatorNode::processFeedback, this, std::placeholders::_1));
         marker_server_->applyChanges();
@@ -109,7 +134,7 @@ public:
 private:
     void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback)
     {
-        // Get marker pose (map->base_footprint)
+        // Get marker pose (map->base_footprint) - now includes both position and orientation
         geometry_msgs::msg::Pose map_to_base_footprint = feedback->pose;
         geometry_msgs::msg::TransformStamped odom_to_base_footprint;
         try {
@@ -125,10 +150,14 @@ private:
         tf2::Transform tf_map_base_footprint, tf_odom_base_footprint;
         tf2::fromMsg(map_to_base_footprint, tf_map_base_footprint);
         tf2::fromMsg(odom_to_base_footprint.transform, tf_odom_base_footprint);
-        // Compute map->odom
+        // Compute map->odom (this now preserves both position and orientation from the marker)
         tf2::Transform tf_map_odom = tf_map_base_footprint * tf_odom_base_footprint.inverse();
         geometry_msgs::msg::Transform map_to_odom_msg = tf2::toMsg(tf_map_odom);
         transform_.transform = map_to_odom_msg;
+        
+        // Update the marker server to reflect the new pose
+        marker_server_->setPose("base_footprint_marker", feedback->pose);
+        marker_server_->applyChanges();
     }
 
     void publishTransform()
